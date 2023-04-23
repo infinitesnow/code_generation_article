@@ -1,0 +1,40 @@
+{
+    "types": [
+        {
+            "name": "A",
+            "payload": [
+                {
+                    "name": "int0",
+                    "type": "int"
+                },
+                {
+                    "name": "int1",
+                    "type": "int"
+                },
+                {
+                    "name": "float",
+                    "type": "float"
+                }
+            ]
+        },
+        {
+            "name": "B",
+            "payload": [
+                {
+                    "name": "vec_int",
+                    "type": "int",
+                    "is_vector": true
+                },
+                {
+                    "name": "vec_float",
+                    "type": "float",
+                    "is_vector": true
+                },
+                {
+                    "name": "int",
+                    "type": "int"
+                }
+            ]
+        }
+    ]
+}

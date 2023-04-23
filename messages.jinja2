@@ -1,0 +1,84 @@
+#pragma once
+
+#include "common.hpp"
+
+#include <vector>
+#include <string>
+#include <iostream>
+#include <sstream>
+
+{%- macro prepend_comma(idx) -%}
+{%- if idx != 1 -%}, {% endif -%}
+{%- endmacro -%}
+
+{%- macro make_constructor_arguments(payload) -%}
+{%- for attr in payload -%}
+{{prepend_comma(loop.index)}}
+{%- if attr.is_vector -%}
+std::vector<{{attr.type}}>
+{%- else -%}
+{{attr.type}}
+{%- endif %} _{{attr.name}}
+{%- endfor -%}
+{%- endmacro %}
+
+template <typename T>
+inline std::string print_vector(std::vector<T> vec)
+{
+    static const unsigned LINE_SIZE = 5;
+
+    unsigned print_cnt = 0;
+    bool first = true;
+    std::ostringstream output;
+    for (auto v : vec)
+    {
+        output << v << " ";
+        if (++print_cnt % LINE_SIZE == 0 && !first)
+        {
+            output << std::endl;
+        }
+        first = false;
+    }
+    if (print_cnt % LINE_SIZE)
+    {
+        output << std::endl;
+    }
+    return output.str();
+}
+
+{% for msgtype in types -%}
+struct Message{{msgtype.name}} : public AbstractMessage
+{
+    {%- for attr in msgtype.payload %}
+    {% if attr.is_vector -%}
+    const std::vector<{{attr.type}}> m_{{attr.name}};
+    {%- else -%}
+    const {{attr.type}} m_{{attr.name}};
+    {%- endif -%}
+    {%- endfor %}
+
+    void print() override
+    {
+        std::cout
+        {%- for attr in msgtype.payload %}
+            << "{{attr.name}}: "
+        {%- if attr.is_vector %}
+            << std::endl
+            << print_vector<{{attr.type}}>(m_{{attr.name}})
+        {%- else %}
+            << m_{{attr.name}}
+            << std::endl
+        {%- endif -%}
+        {%- endfor -%};
+        std::cout << std::endl;
+    }
+
+    Message{{msgtype.name}}(
+    {{ make_constructor_arguments(msgtype.payload) }}
+    )
+        :   {% for attr in msgtype.payload -%}{{prepend_comma(loop.index)}}m_{{attr.name}}(_{{attr.name}}){%- endfor %}
+    {}
+
+};
+
+{% endfor -%}
